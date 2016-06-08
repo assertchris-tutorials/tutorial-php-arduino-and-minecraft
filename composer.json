@@ -1,0 +1,5 @@
+{
+    "require": {
+        "yosymfony/resource-watcher": "^1.1"
+    }
+}
