@@ -21,29 +21,51 @@ $cache = new ResourceCacheFile(__DIR__ . "/cache.php");
 $watcher = new ResourceWatcher($cache);
 $watcher->setFinder($finder);
 
-while(true) {
-    sleep(1);
+use Carica\Io;
+use Carica\Firmata;
 
-    $watcher->findChanges();
-    $changes = $watcher->getUpdatedResources();
+$board = new Firmata\Board(
+    Io\Stream\Serial\Factory::create(
+        "/dev/tty.usbmodem1421", 57600
+    )
+);
 
-    if (count($changes) > 0) {
-        $first = $changes[0];
+$loop = Io\Event\Loop\Factory::get();
 
-        $lines = file($first);
+$board
+    ->activate()
+    ->done(
+        function() use ($board, $loop, $watcher) {
+            $pin = $board->pins[9];
+            $pin->mode = Firmata\Pin::MODE_PWM;
 
-        for ($i = count($lines) - 1; $i > -1; $i--) {
-            if (stristr($lines[$i], "CHAT")) {
-                if (stristr($lines[$i], "closed")) {
-                    print "closed!";
-                }
+            $loop->setInterval(
+                function() use ($pin, $watcher) {
+                    $watcher->findChanges();
+                    $changes = $watcher->getUpdatedResources();
 
-                if (stristr($lines[$i], "open")) {
-                    print "open!";
-                }
+                    if (count($changes) > 0) {
+                        $first = $changes[0];
 
-                break;
-            }
+                        $lines = file($first);
+
+                        for ($i = count($lines) - 1; $i > -1; $i--) {
+                            if (stristr($lines[$i], "CHAT")) {
+                                if (stristr($lines[$i], "closed")) {
+                                    $pin->analog = 0;
+                                }
+
+                                if (stristr($lines[$i], "open")) {
+                                    $pin->analog = 1;
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }, 1000
+            );
         }
-    }
-}
+    );
+
+$loop->run();
