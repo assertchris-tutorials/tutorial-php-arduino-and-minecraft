@@ -1,6 +1,7 @@
 {
     "require": {
-        "yosymfony/resource-watcher": "^1.1"
+        "yosymfony/resource-watcher": "^1.1",
+        "carica/firmata": "dev-master"
     },
     "minimum-stability": "dev",
     "prefer-stable": true

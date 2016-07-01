@@ -26,21 +26,27 @@ use Carica\Firmata;
 
 $board = new Firmata\Board(
     Io\Stream\Serial\Factory::create(
-        "/dev/tty.usbmodem1421", 57600
+        "/dev/cu.usbmodem14141", 57600
     )
 );
 
 $loop = Io\Event\Loop\Factory::get();
 
+print "connecting.";
+
 $board
     ->activate()
     ->done(
         function() use ($board, $loop, $watcher) {
+            print "connected.";
+
             $pin = $board->pins[9];
             $pin->mode = Firmata\Pin::MODE_PWM;
 
             $loop->setInterval(
                 function() use ($pin, $watcher) {
+                    // print "check.";
+
                     $watcher->findChanges();
                     $changes = $watcher->getUpdatedResources();
 
@@ -52,10 +58,14 @@ $board
                         for ($i = count($lines) - 1; $i > -1; $i--) {
                             if (stristr($lines[$i], "CHAT")) {
                                 if (stristr($lines[$i], "closed")) {
+                                    print "off.";
+
                                     $pin->analog = 0;
                                 }
 
                                 if (stristr($lines[$i], "open")) {
+                                    print "on.";
+
                                     $pin->analog = 1;
                                 }
 
