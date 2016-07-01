@@ -1,8 +1,6 @@
 {
     "require": {
-        "yosymfony/resource-watcher": "^1.1",
-        "carica/firmata": "dev-master",
-        "phpmake/firmata": "dev-master"
+        "yosymfony/resource-watcher": "^1.1"
     },
     "minimum-stability": "dev",
     "prefer-stable": true
